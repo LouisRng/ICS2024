@@ -32,6 +32,9 @@ $(OBJ_DIR)/%.o: %.c
 	@echo + CC $<
 	@mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(CFLAGS) -E -MF /dev/null $< | \
+		grep -ve '^#' | \
+		clang-format - > $(basename $@).i
 	$(call call_fixdep, $(@:.o=.d), $@)
 
 $(OBJ_DIR)/%.o: %.cc
@@ -39,13 +42,6 @@ $(OBJ_DIR)/%.o: %.cc
 	@mkdir -p $(dir $@)
 	@$(CXX) $(CFLAGS) $(CXXFLAGS) -c -o $@ $<
 	$(call call_fixdep, $(@:.o=.d), $@)
-
-# __preprocess to generate %.o file
-$(OBJ_DIR)/%.o: src/%.c
-	@$(CC) $(CFLAGS) $(SO_CFLAGS) -c -o $@ $<
-	@$(CC) $(CFLAGS) $(SO_CFLAGS) -E -MF /dev/null $< | \
-		grep -ve '^#' | \
-		clang-format - > $(basename $@).i
 
 # Depencies
 -include $(OBJS:.o=.d)
