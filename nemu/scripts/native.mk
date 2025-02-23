@@ -41,6 +41,7 @@ gdb: run-env
 	$(call git_commit, "gdb NEMU")
 	gdb -s $(BINARY) --args $(NEMU_EXEC)
 
+# __cases for test
 test: run-env
 	$(NEMU_EXEC) < testcase.txt
 
