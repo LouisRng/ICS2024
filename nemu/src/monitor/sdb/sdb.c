@@ -53,6 +53,33 @@ static int cmd_q(char *args) {
   return -1;
 }
 
+static int cmd_info(char *args) {
+  char *arg = strtok(NULL, " ");
+  assert(arg != NULL);
+  if (strcmp(arg, "r") == 0) {
+    isa_reg_display();
+  }
+  return 0;
+}
+
+static int cmd_x(char *args) {
+  /* get arguments */
+  /* char *arg_n = strtok(NULL, " "); */
+  /* char *arg_addr = strtok(NULL, " "); */
+  /*  */
+  /* transform str to numbers */
+  /* uint32_t num = (uint32_t)strtol(arg_n, NULL, 10);  */
+  /* paddr_t addr = (paddr_t)strtol(arg_addr, NULL, 16); */
+  /**/
+  /* for (int i = 0; i < num; i++) { */
+  /*   paddr_t value = pmem_read(addr, 4);  // 每次偏移 4 字节 */
+  /*   printf("0x%08x:  0x%08x\n", addr + i * 4, value);  */
+  /* }  */
+  return 0; 
+}
+
+static int cmd_si(char *args); 
+
 static int cmd_help(char *args);
 
 static struct {
@@ -63,7 +90,9 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
+  { "si", "Execute n steps of commands, n is given after si", cmd_si },
+  { "info", "Print information of register or watchpoint", cmd_info }, 
+  { "x", "displays the contents of memory at a specified address", cmd_x},
   /* TODO: Add more commands */
 
 };
@@ -90,6 +119,34 @@ static int cmd_help(char *args) {
     }
     printf("Unknown command '%s'\n", arg);
   }
+  return 0;
+}
+
+static int cmd_si(char *args) {
+  char *arg = strtok(NULL, " ");
+  
+  if (arg == NULL) {
+    /* no argument given, execute once */
+    cpu_exec(1); 
+    return 0;
+  } 
+
+  char *endptr;
+  int steps = 0;
+  steps = (int)strtol(arg, &endptr, 10);
+
+  /* handle invalid input */
+  if (*endptr != '\0'){
+    printf("Error: Invalid input %s, must be a positive input integer.\n", arg);
+    return 0;
+  }
+
+  if (steps <= 0) {
+    printf("Error: Step count '%d' is invalid. Must be a positive integer.\n", steps);
+    return 0;
+  } 
+
+  cpu_exec(steps);
   return 0;
 }
 
