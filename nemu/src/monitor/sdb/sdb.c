@@ -18,6 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include <memory/paddr.h>
 
 static int is_batch_mode = false;
 
@@ -64,17 +65,17 @@ static int cmd_info(char *args) {
 
 static int cmd_x(char *args) {
   /* get arguments */
-  /* char *arg_n = strtok(NULL, " "); */
-  /* char *arg_addr = strtok(NULL, " "); */
-  /*  */
+  char *arg_n = strtok(NULL, " ");
+  char *arg_addr = strtok(NULL, " ");
+
   /* transform str to numbers */
-  /* uint32_t num = (uint32_t)strtol(arg_n, NULL, 10);  */
-  /* paddr_t addr = (paddr_t)strtol(arg_addr, NULL, 16); */
-  /**/
-  /* for (int i = 0; i < num; i++) { */
-  /*   paddr_t value = pmem_read(addr, 4);  // 每次偏移 4 字节 */
-  /*   printf("0x%08x:  0x%08x\n", addr + i * 4, value);  */
-  /* }  */
+  uint32_t num = (uint32_t)strtol(arg_n, NULL, 10); 
+  paddr_t addr = (paddr_t)strtol(arg_addr, NULL, 16);
+
+  for (int i = 0; i < num; i++) {
+    paddr_t value = paddr_read(addr + i * 4, 4);  // 每次偏移 4 字节
+    printf("0x%08x:  0x%08x\n", addr + i * 4, value); 
+  } 
   return 0; 
 }
 
