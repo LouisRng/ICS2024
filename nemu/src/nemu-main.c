@@ -22,6 +22,8 @@ int is_exit_status_bad();
 
 int main(int argc, char *argv[]) {
   /* Initialize the monitor. */
+  int arr[10] = {0};
+  printf("%d\n", arr[10]);
 #ifdef CONFIG_TARGET_AM
   am_init_monitor();
 #else

@@ -64,14 +64,45 @@ static int cmd_info(char *args) {
 }
 
 static int cmd_x(char *args) {
-  /* get arguments */
-  char *arg_n = strtok(NULL, " ");
-  char *arg_addr = strtok(NULL, " ");
+  /* 参数检查 */
+  if (args == NULL) {
+    printf("Error: Missing arguments for 'x' command\n");
+    printf("Usage: x N EXPR - Examine N 4-byte words starting at address EXPR\n");
+    return 0;
+  }
+  
+  /* 获取扫描内存的数量 */
+  char *arg_n = strtok(args, " ");
+  if (arg_n == NULL) {
+    printf("Error: Missing number of units to display\n");
+    return 0;
+  }
+  
+  /* 获取剩余的参数作为表达式 */
+  char *expr_str = strtok(NULL, "");
+  if (expr_str == NULL) {
+    printf("Error: Missing address expression\n");
+    return 0;
+  }
+  
+  /* 转换扫描数量 */
+  word_t num = (word_t)strtol(arg_n, NULL, 10);
 
-  /* transform str to numbers */
-  uint32_t num = (uint32_t)strtol(arg_n, NULL, 10); 
-  paddr_t addr = (paddr_t)strtol(arg_addr, NULL, 16);
+  if (num <= 0) {
+    printf("Error: Number of units must be positive\n");
+    return 0;
+  }
+  
+  /* 使用表达式求值获取地址 */
+  bool success = true;
+  paddr_t addr = expr(expr_str, &success);
+  
+  if (!success) {
+    printf("Error: Invalid address expression\n");
+    return 0;
+  }
 
+  /* 扫描并打印内存内容 */
   for (int i = 0; i < num; i++) {
     paddr_t value = paddr_read(addr + i * 4, 4);  // 每次偏移 4 字节
     printf("0x%08x:  0x%08x\n", addr + i * 4, value); 
