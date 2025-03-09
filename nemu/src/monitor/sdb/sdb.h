@@ -20,4 +20,10 @@
 
 word_t expr(char *e, bool *success);
 
+/* 添加监视点相关函数的声明 */
+bool check_watchpoints();
+int set_watchpoint(char *e);
+bool delete_watchpoint(int NO);
+void list_watchpoints();
+
 #endif

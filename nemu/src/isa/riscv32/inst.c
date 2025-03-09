@@ -22,6 +22,14 @@
 #define Mr vaddr_read
 #define Mw vaddr_write
 
+/* 
+ * 补充指令格式:
+ * TYPE_I: imm[11:0] rs1(19:15) funct3(14:12) rd(11:7) opcode(6:0)
+ * TYPE_U: imm[31:12] rd(11:7) opcode(6:0)
+ * TYPE_S: imm[11:5] rs2(24:20) rs1(19:15) funct3(14:12) imm[4:0] opcode(6:0)
+ * TYPE_N: 
+ */
+
 enum {
   TYPE_I, TYPE_U, TYPE_S,
   TYPE_N, // none
@@ -29,10 +37,11 @@ enum {
 
 #define src1R() do { *src1 = R(rs1); } while (0)
 #define src2R() do { *src2 = R(rs2); } while (0)
-#define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while(0)
+#define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while(0) // SEXT 宏用于符号扩展
 #define immU() do { *imm = SEXT(BITS(i, 31, 12), 20) << 12; } while(0)
 #define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while(0)
 
+/* 根据传入的指令类型 type 进行操作数的译码，译码结果记录到 rd, src1, src2, imm */
 static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst;
   int rs1 = BITS(i, 19, 15);
@@ -58,6 +67,7 @@ static int decode_exec(Decode *s) {
   __VA_ARGS__ ; \
 }
 
+  /* INSTPAT中的第二个字段不参与宏展开，它只是STRLEN(pattern) */
   INSTPAT_START();
   INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc  , U, R(rd) = s->pc + imm);
   INSTPAT("??????? ????? ????? 100 ????? 00000 11", lbu    , I, R(rd) = Mr(src1 + imm, 1));
