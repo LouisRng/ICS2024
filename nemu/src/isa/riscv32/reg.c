@@ -30,5 +30,30 @@ void isa_reg_display() {
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
+  *success = true;
+
+  /* 匹配标准寄存器名称 */
+  for (int i = 0; i < 32; i++) {
+    if (strcmp(regs[i], s) == 0) {
+      return cpu.gpr[i];
+    }
+  }
+
+  /* 下面的代码由 ai 推荐，不一定用到 */
+  /* 处理 pc 寄存器特殊情况 */ 
+  if (strcmp(s, "pc") == 0) {
+    return cpu.pc;
+  }
+
+  /* 处理 x0 - x31 格式寄存器 */
+  if (s[0] == 'x') {
+    char *endptr;
+    long idx = strtol(s + 1, &endptr, 10);
+    if (*endptr == '\0' && idx >= 0 && idx < 32) {
+      return cpu.gpr[idx];
+    }
+  } 
+
+  *success = false;
   return 0;
 }

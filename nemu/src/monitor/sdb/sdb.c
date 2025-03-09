@@ -56,9 +56,19 @@ static int cmd_q(char *args) {
 
 static int cmd_info(char *args) {
   char *arg = strtok(NULL, " ");
-  assert(arg != NULL);
+  if (arg == NULL) {
+    printf("Usage: info r - Show register values\n");
+    printf("       infor w - Show watchpoints\n");
+    return 0;
+  }
   if (strcmp(arg, "r") == 0) {
     isa_reg_display();
+  } 
+  else if (strcmp(arg, "w") == 0) {
+    list_watchpoints();
+  }
+  else {
+    printf("Unknown info command: %s\n", arg);
   }
   return 0;
 }
@@ -110,9 +120,14 @@ static int cmd_x(char *args) {
   return 0; 
 }
 
+/* 函数声明 */
 static int cmd_si(char *args); 
 
 static int cmd_help(char *args);
+
+static int cmd_w(char *args);
+
+static int cmd_d(char *args);
 
 static struct {
   const char *name;
@@ -122,11 +137,13 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  { "si", "Execute n steps of commands, n is given after si", cmd_si },
-  { "info", "Print information of register or watchpoint", cmd_info }, 
-  { "x", "displays the contents of memory at a specified address", cmd_x},
   /* TODO: Add more commands */
 
+  { "si", "Execute n steps of commands, n is given after si", cmd_si },
+  { "x", "displays the contents of memory at a specified address", cmd_x},
+  { "w", "Set watchpoint on expression", cmd_w },
+  { "d", "Delete watchpoint", cmd_d },
+  { "info", "Print information of register or watchpoint", cmd_info }, 
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -179,6 +196,36 @@ static int cmd_si(char *args) {
   } 
 
   cpu_exec(steps);
+  return 0;
+}
+
+static int cmd_w(char *args) {
+  if (args == NULL) {
+    printf("Usage: w EXPR - set watchpoint on expression EXPR\n");
+    return 0;
+  }
+
+  int wp_no = set_watchpoint(args);
+  if (wp_no >= 0) {
+    printf("watchpoint %d set\n", wp_no);
+  }
+  return 0;
+}
+
+static int cmd_d(char *args) {
+  if (args == NULL) {
+    printf("Usage: d N - Delete watchpoint number N\n");
+    return 0;
+  }
+
+  char *endptr;
+  int wp_no = (int)strtol(args, &endptr, 10);
+  if (*endptr != '\0') {
+    printf("Invalid watchpoint number: %s\n", args);
+    return 0;
+  }
+
+  delete_watchpoint(wp_no);
   return 0;
 }
 
