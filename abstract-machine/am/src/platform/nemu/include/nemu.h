@@ -6,6 +6,7 @@
 #include ISA_H // the macro `ISA_H` is defined in CFLAGS
                // it will be expanded as "x86/x86.h", "mips/mips32.h", ...
 
+/* 用来实现在不同的架构中的 nemu_trap 结束程序运行 */
 #if defined(__ISA_X86__)
 # define nemu_trap(code) asm volatile ("int3" : :"a"(code))
 #elif defined(__ISA_MIPS32__)
