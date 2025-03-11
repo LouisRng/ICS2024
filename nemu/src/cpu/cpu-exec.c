@@ -17,6 +17,8 @@
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
 #include <locale.h>
+
+/* 可能需要再看看 */ 
 #include "../monitor/sdb/sdb.h"
 
 /* The assembly code of instructions executed is only output to the screen
@@ -74,6 +76,21 @@ static void exec_once(Decode *s, vaddr_t pc) {
   void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
   disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst, ilen);
+
+#ifdef CONFIG_ITRACE
+  /* ...现有的反汇编代码... */
+  disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
+      MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst, ilen);
+      
+  // 在这里添加环形缓冲区记录代码
+  #ifdef CONFIG_IRINGBUF
+    // 提取指令反汇编文本
+    char *disasm_text = s->logbuf + (p - s->logbuf);
+    // 记录到环形缓冲区
+    iringbuf_record(s->pc, (uint8_t *)&s->isa.inst, ilen, disasm_text);
+  #endif
+#endif
+
 #endif
 }
 
@@ -99,6 +116,9 @@ static void statistic() {
 
 void assert_fail_msg() {
   isa_reg_display();
+#ifdef CONFIG_IRINGBUF
+  iringbuf_display();
+#endif
   statistic();
 }
 

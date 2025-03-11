@@ -40,4 +40,31 @@
 
 #define TODO() panic("please implement me")
 
+/* 指令环形缓冲区相关定义 */
+#ifdef CONFIG_IRINGBUF
+#define IRINGBUF_SIZE 16  // 环形缓冲区大小
+
+typedef struct {
+  vaddr_t pc;          // 指令地址
+  uint8_t inst[4];     // 指令机器码
+  int inst_len;        // 指令长度
+  char disasm[128];    // 反汇编文本
+} IRingbufEntry;
+
+extern IRingbufEntry iringbuf[IRINGBUF_SIZE];  // 环形缓冲区
+extern int iringbuf_index;                     // 当前写入位置
+extern vaddr_t current_pc;                     // 当前执行的PC
+
+void iringbuf_record(vaddr_t pc, uint8_t *inst, int inst_len, char *disasm);
+void iringbuf_display();
+#endif /* CONFIG_IRINGBUF */
+
+#endif
+
+/* 内存访问踪迹相关定义 */
+#ifdef CONFIG_MTRACE
+// 判断是否输出mtrace的条件
+#define MTRACE_COND (CONFIG_MTRACE_COND)
+// mtrace函数声明
+void mtrace_write(bool is_write, paddr_t addr, int len, word_t data);
 #endif

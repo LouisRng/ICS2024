@@ -18,6 +18,8 @@
 #include <cpu/ifetch.h>
 #include <cpu/decode.h>
 
+#include <monitor/ftrace.h>
+
 #define R(i) gpr(i)
 #define Mr vaddr_read
 #define Mw vaddr_write
@@ -129,8 +131,37 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 111 ????? 11000 11", bgeu   , B, s->dnpc = (src1 >= src2) ? s->pc + imm : s->dnpc);
   
   /* Jump instructions */
-  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, R(rd) = s->snpc; s->dnpc = s->pc + imm);
-  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, { word_t t = s->snpc; s->dnpc = (src1 + imm) & ~1; R(rd) = t; });
+
+  /* 修改jal指令实现 */
+  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal, J, {
+    R(rd) = s->snpc; 
+    s->dnpc = s->pc + imm;
+    
+    /* 添加函数调用检测：当rd为ra(x1)寄存器时认为是函数调用 */
+    IFDEF(CONFIG_FTRACE, 
+      if (rd == 1) { /* rd is x1(ra) */
+        ftrace_call(s->pc, s->dnpc);
+      }
+    );
+  });
+
+  /* 修改jalr指令实现 */
+  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr, I, {
+    word_t t = s->snpc; 
+    s->dnpc = (src1 + imm) & ~1; 
+    R(rd) = t;
+    
+    /* 添加函数返回检测：当是ret伪指令时(jalr x0, 0(ra))认为是函数返回 */
+    IFDEF(CONFIG_FTRACE,
+      if (rd == 0 && rs1 == 1 && imm == 0) { /* ret instruction */
+        ftrace_ret(s->pc, s->dnpc);
+      }
+      /* 另一种函数调用情况：jalr ra, offset(rs1) */
+      else if (rd == 1) {
+        ftrace_call(s->pc, s->dnpc);
+      }
+    );
+  });
   
   /* RV32M Extension (Multiplication and Division) */
   INSTPAT("0000001 ????? ????? 000 ????? 01100 11", mul    , R, R(rd) = (int32_t)src1 * (int32_t)src2);

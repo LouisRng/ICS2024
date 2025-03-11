@@ -66,6 +66,9 @@ static long load_img() {
   return size;
 }
 
+/* ftrace */
+static char *elf_file = NULL;
+
 static int parse_args(int argc, char *argv[]) {
   const struct option table[] = {
     {"batch"    , no_argument      , NULL, 'b'},
@@ -73,15 +76,18 @@ static int parse_args(int argc, char *argv[]) {
     {"diff"     , required_argument, NULL, 'd'},
     {"port"     , required_argument, NULL, 'p'},
     {"help"     , no_argument      , NULL, 'h'},
+    /* 添加ELF文件选项 */
+    {"elf"      , required_argument, NULL, 'e'},
     {0          , 0                , NULL,  0 },
   };
   int o;
-  while ( (o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
+  while ( (o = getopt_long(argc, argv, "-bhl:d:p:e:", table, NULL)) != -1) {
     switch (o) {
       case 'b': sdb_set_batch_mode(); break;
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
+      case 'e': elf_file = optarg; break;
       case 1: img_file = optarg; return 0;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
@@ -89,9 +95,10 @@ static int parse_args(int argc, char *argv[]) {
         printf("\t-l,--log=FILE           output log to FILE\n");
         printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
         printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
+        printf("\t-e,--elf=ELF_FILE       specify ELF file for ftrace\n");
         printf("\n");
         exit(0);
-    }
+    } 
   }
   return 0;
 }
@@ -125,12 +132,24 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize the simple debugger. */
   init_sdb();
-
+  
+  /* Initialize disassembly */
   IFDEF(CONFIG_ITRACE, init_disasm());
+
+  /* Initialize function tracer */
+  IFDEF(CONFIG_FTRACE, init_ftrace(elf_file ? elf_file : CONFIG_FTRACE_ELF));
 
   /* Display welcome message. */
   welcome();
 }
+
+void engine_cleanup() {
+  /* ... 其他清理代码 ... */
+  
+  /* Clean up function tracer */
+  IFDEF(CONFIG_FTRACE, ftrace_cleanup());
+}
+
 #else // CONFIG_TARGET_AM
 static long load_img() {
   extern char bin_start, bin_end;

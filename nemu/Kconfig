@@ -151,6 +151,47 @@ config ITRACE_COND
   string "Only trace instructions when the condition is true"
   default "true"
 
+config IRINGBUF
+  bool "Enable instruction ring buffer"
+  depends on ITRACE
+  default n
+  help
+    When enabled, NEMU will record the most recent executed instructions
+    in a ring buffer and display them when error occurs.
+
+config MTRACE
+  depends on TRACE && TARGET_NATIVE_ELF
+  bool "Enable memory access tracer"
+  default n
+  help
+    Enable memory access tracing to monitor read/write operations.
+    Similar to instruction tracing but focuses on memory access.
+    This can significantly slow down execution, disable if not needed.
+
+config MTRACE_COND
+  depends on MTRACE
+  string "Only trace memory access when the condition is true"
+  default "true"
+  help
+    Specify a condition to filter memory access traces. For example:
+    "addr >= 0x80000000 && addr <= 0x8000FFFF" will only trace accesses
+    to this memory region. The default "true" traces all memory accesses.
+
+config FTRACE
+  depends on TRACE && TARGET_NATIVE_ELF
+  bool "Enable function call tracer"
+  default n
+  help
+    Enable function call tracing to track program execution flow.
+    This will help understand the semantics of program execution.
+
+config FTRACE_ELF
+  depends on FTRACE
+  string "Path to the ELF file for symbol resolution"
+  default ""
+  help
+    The ELF file containing symbol information for function name resolution.
+
 config WATCHPOINT
   depends on TRACE && TARGET_NATIVE_ELF
   bool "Enable watchpoint"

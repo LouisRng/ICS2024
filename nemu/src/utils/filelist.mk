@@ -22,3 +22,13 @@ src/utils/disasm.c: $(LIBCAPSTONE)
 $(LIBCAPSTONE):
 	$(MAKE) -C tools/capstone
 endif
+
+# 添加iringbuf.c到构建
+ifdef CONFIG_IRINGBUF
+SRCS-y += src/utils/iringbuf.c
+endif
+
+# 在现有内容的适当位置添加
+ifdef CONFIG_MTRACE
+SRCS-y += src/utils/mtrace.c
+endif
