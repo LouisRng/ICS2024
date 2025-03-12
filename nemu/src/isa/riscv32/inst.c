@@ -162,7 +162,7 @@ int isa_exec_once(Decode *s) {
   s->isa.inst = inst_fetch(&s->snpc, 4); 
 
   // 获取指令后立即记录
-#ifdef CONFIG_IRINGBUF
+#ifdef CONFIG_ITRACE
   iringbuf_record(s->pc, s->isa.inst);
 #endif
 
