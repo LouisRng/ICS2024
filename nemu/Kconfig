@@ -136,7 +136,7 @@ config TRACE_START
   int "When tracing is enabled (unit: number of instructions)"
   default 0
 
-config TRACE_END
+config TRACE_END 
   depends on TRACE
   int "When tracing is disabled (unit: number of instructions)"
   default 10000
@@ -150,6 +150,34 @@ config ITRACE_COND
   depends on ITRACE
   string "Only trace instructions when the condition is true"
   default "true"
+
+config MTRACE
+  depends on TRACE && TARGET_NATIVE_ELF
+  bool "Enable memory access tracer"
+  default n
+  help
+    Enable memory access tracing to record all memory read/write operations.
+    This can significantly slow down execution, only enable when debugging memory issues.
+
+config MTRACE_COND
+  depends on MTRACE
+  string "Only trace memory accesses when the condition is true"
+  default "true"
+
+# 下面的两个配置分别定义了要追踪的内存访问的最小地址和最大地址
+# 都设置为0表示追踪所有内存地址的访问
+config MTRACE_RANGE_LOW
+  depends on MTRACE
+  hex "Lower bound of memory address to trace (0 for all)"
+  default 0x0
+  
+config MTRACE_RANGE_HIGH
+  depends on MTRACE
+  hex "Upper bound of memory address to trace (0 for all)"
+  default 0x0
+  help
+    Set to 0 to trace all memory addresses. Otherwise only trace memory 
+    accesses within [MTRACE_RANGE_LOW, MTRACE_RANGE_HIGH]
 
 config WATCHPOINT
   depends on TRACE && TARGET_NATIVE_ELF

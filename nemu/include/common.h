@@ -44,6 +44,13 @@ typedef MUXDEF(PMEM64, uint64_t, uint32_t) paddr_t;
 #define FMT_PADDR MUXDEF(PMEM64, "0x%016" PRIx64, "0x%08" PRIx32)
 typedef uint16_t ioaddr_t;
 
+// 内存访问追踪条件定义
+#ifdef CONFIG_MTRACE_COND
+#define MTRACE_COND (CONFIG_MTRACE_COND)
+#else
+#define MTRACE_COND true
+#endif
+
 #include <debug.h>
 
 #endif
