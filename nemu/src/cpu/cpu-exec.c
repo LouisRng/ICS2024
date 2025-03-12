@@ -17,6 +17,10 @@
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
 #include <locale.h>
+
+/* 环形缓冲区 */
+#include <cpu/iringbuf.h>
+
 #include "../monitor/sdb/sdb.h"
 
 /* The assembly code of instructions executed is only output to the screen
@@ -98,6 +102,11 @@ static void statistic() {
 }
 
 void assert_fail_msg() {
+/* 显示iringbuf错误信息 */
+#ifdef CONFIG_ITRACE
+  iringbuf_display(cpu.pc);
+#endif
+
   isa_reg_display();
   statistic();
 }

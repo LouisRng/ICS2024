@@ -18,6 +18,9 @@
 #include <cpu/ifetch.h>
 #include <cpu/decode.h>
 
+/* 环形缓冲区 */
+#include <cpu/iringbuf.h>
+
 #define R(i) gpr(i)
 #define Mr vaddr_read
 #define Mw vaddr_write
@@ -156,6 +159,12 @@ static int decode_exec(Decode *s) {
 }
 
 int isa_exec_once(Decode *s) {
-  s->isa.inst = inst_fetch(&s->snpc, 4);
+  s->isa.inst = inst_fetch(&s->snpc, 4); 
+
+  // 获取指令后立即记录
+#ifdef CONFIG_IRINGBUF
+  iringbuf_record(s->pc, s->isa.inst);
+#endif
+
   return decode_exec(s);
 }

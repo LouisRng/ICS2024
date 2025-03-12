@@ -16,6 +16,9 @@
 #include <isa.h>
 #include <memory/paddr.h>
 
+/* 环形缓冲区 */
+#include <cpu/iringbuf.h>
+
 void init_rand();
 void init_log(const char *log_file);
 void init_mem();
@@ -126,7 +129,9 @@ void init_monitor(int argc, char *argv[]) {
   /* Initialize the simple debugger. */
   init_sdb();
 
+  /* Initialize disasm and iringbuf. */
   IFDEF(CONFIG_ITRACE, init_disasm());
+  IFDEF(CONFIG_ITRACE, init_iringbuf());
 
   /* Display welcome message. */
   welcome();
