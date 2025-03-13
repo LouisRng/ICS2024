@@ -45,15 +45,11 @@ static void welcome() {
         "to record the trace. This may lead to a large log file. "
         "If it is not necessary, you can disable it in menuconfig"));
 
-  printf("<------------------------------------------------------------------>\n");
-
   Log("FTrace:  %s", MUXDEF(CONFIG_FTRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
   IFDEF(CONFIG_FTRACE, Log("Function call tracing is enabled. "
         "Use the -e/--elf option to specify an ELF file "
         "to map addresses to function names. "
         "If it is not necessary, you can disable it in menuconfig"));
-
-  printf("<------------------------------------------------------------------>\n");
 
   Log("MTrace:  %s", MUXDEF(CONFIG_MTRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
   IFDEF(CONFIG_MTRACE, Log("Memory access tracing is enabled. "
