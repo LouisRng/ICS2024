@@ -1,0 +1,28 @@
+
+/home/ethan/workplace/ICS2024/ics2024/am-kernels/tests/cpu-tests/build/test-riscv32-nemu.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+80000000 <_start>:
+80000000:	00000413          	li	s0,0
+80000004:	00009117          	auipc	sp,0x9
+80000008:	ffc10113          	addi	sp,sp,-4 # 80009000 <_end>
+8000000c:	018000ef          	jal	80000024 <_trm_init>
+
+80000010 <main>:
+80000010:	123457b7          	lui	a5,0x12345
+80000014:	06400713          	li	a4,100
+80000018:	66e7ac23          	sw	a4,1656(a5) # 12345678 <_entry_offset+0x12345678>
+8000001c:	00000513          	li	a0,0
+80000020:	00008067          	ret
+
+80000024 <_trm_init>:
+80000024:	ff010113          	addi	sp,sp,-16
+80000028:	00000517          	auipc	a0,0x0
+8000002c:	01c50513          	addi	a0,a0,28 # 80000044 <_etext>
+80000030:	00112623          	sw	ra,12(sp)
+80000034:	fddff0ef          	jal	80000010 <main>
+80000038:	00050513          	mv	a0,a0
+8000003c:	00100073          	ebreak
+80000040:	0000006f          	j	80000040 <_trm_init+0x1c>
