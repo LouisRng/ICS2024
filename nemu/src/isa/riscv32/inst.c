@@ -18,6 +18,9 @@
 #include <cpu/ifetch.h>
 #include <cpu/decode.h>
 
+/* 函数追踪 */
+#include <cpu/ftrace.h>
+
 /* 环形缓冲区 */
 #include <cpu/iringbuf.h>
 
@@ -132,9 +135,28 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 111 ????? 11000 11", bgeu   , B, s->dnpc = (src1 >= src2) ? s->pc + imm : s->dnpc);
   
   /* Jump instructions */
-  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, R(rd) = s->snpc; s->dnpc = s->pc + imm);
-  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, { word_t t = s->snpc; s->dnpc = (src1 + imm) & ~1; R(rd) = t; });
-  
+  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, {
+    R(rd) = s->snpc; 
+    s->dnpc = s->pc + imm;
+    // 如果是函数调用（rd == ra/x1）
+    if (rd == 1) {
+      IFDEF(CONFIG_FTRACE, ftrace_call(s->pc, s->dnpc));
+    }
+  });
+  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, {
+    word_t t = s->snpc; 
+    s->dnpc = (src1 + imm) & ~1; 
+    // 从指令中直接提取rs1字段
+    int rs1_val = BITS(s->isa.inst, 19, 15);
+    // 如果是函数返回（rd == x0 && rs1 == ra/x1）
+    if (rd == 0 && rs1_val == 1) {
+      IFDEF(CONFIG_FTRACE, ftrace_ret(s->pc, src1 + imm));
+    } else if (rd == 1) { // 如果是函数调用（rd == ra/x1，间接调用）
+      IFDEF(CONFIG_FTRACE, ftrace_call(s->pc, src1 + imm));
+    }
+    R(rd) = t;
+  }); 
+
   /* RV32M Extension (Multiplication and Division) */
   INSTPAT("0000001 ????? ????? 000 ????? 01100 11", mul    , R, R(rd) = (int32_t)src1 * (int32_t)src2);
   INSTPAT("0000001 ????? ????? 001 ????? 01100 11", mulh   , R, R(rd) = (int64_t)((int32_t)src1) * (int64_t)((int32_t)src2) >> 32);

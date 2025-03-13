@@ -187,6 +187,15 @@ config WATCHPOINT
     Enable watchpoint functionality to track expression value changes.
     watchpoint can significantly slow down the execution, disable if not needed.
 
+config FTRACE
+  depends on TRACE && TARGET_NATIVE_ELF
+  bool "Enable function call tracer"
+  default y
+  help
+    Enable function call and return tracing. This requires an ELF file 
+    to map addresses to function names. Use --elf parameter to specify
+    the ELF file.
+
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
   bool "Enable differential testing"

@@ -1,6 +1,7 @@
 #include <cpu/iringbuf.h>
 #include <isa.h>
 
+#ifdef CONFIG_ITRACE
 /* 添加 disassemble 函数的前向声明 */
 void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 
@@ -101,3 +102,5 @@ void iringbuf_display(vaddr_t current_pc) {
   
   printf("====================================================\n\n");
 }
+
+#endif

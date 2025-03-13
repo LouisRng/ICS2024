@@ -19,6 +19,9 @@
 /* 环形缓冲区 */
 #include <cpu/iringbuf.h>
 
+/* ftrace */
+#include <cpu/ftrace.h>
+
 void init_rand();
 void init_log(const char *log_file);
 void init_mem();
@@ -41,6 +44,22 @@ static void welcome() {
   IFDEF(CONFIG_TRACE, Log("If trace is enabled, a log file will be generated "
         "to record the trace. This may lead to a large log file. "
         "If it is not necessary, you can disable it in menuconfig"));
+
+  printf("<------------------------------------------------------------------>\n");
+
+  Log("FTrace:  %s", MUXDEF(CONFIG_FTRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
+  IFDEF(CONFIG_FTRACE, Log("Function call tracing is enabled. "
+        "Use the -e/--elf option to specify an ELF file "
+        "to map addresses to function names. "
+        "If it is not necessary, you can disable it in menuconfig"));
+
+  printf("<------------------------------------------------------------------>\n");
+
+  Log("MTrace:  %s", MUXDEF(CONFIG_MTRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
+  IFDEF(CONFIG_MTRACE, Log("Memory access tracing is enabled. "
+        "This may significantly slow down simulation. "
+        "If it is not necessary, you can disable it in menuconfig"));
+
   Log("Build time: %s, %s", __TIME__, __DATE__);
   printf("Welcome to %s-NEMU!\n", ANSI_FMT(str(__GUEST_ISA__), ANSI_FG_YELLOW ANSI_BG_RED));
   printf("For help, type \"help\"\n");
@@ -78,6 +97,8 @@ static long load_img() {
   return size;
 }
 
+static char *elf_file = NULL;
+
 static int parse_args(int argc, char *argv[]) {
   const struct option table[] = {
     {"batch"    , no_argument      , NULL, 'b'},
@@ -85,15 +106,17 @@ static int parse_args(int argc, char *argv[]) {
     {"diff"     , required_argument, NULL, 'd'},
     {"port"     , required_argument, NULL, 'p'},
     {"help"     , no_argument      , NULL, 'h'},
+    {"elf"      , required_argument, NULL, 'e'}, // 添加elf参数
     {0          , 0                , NULL,  0 },
   };
   int o;
-  while ( (o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
+  while ( (o = getopt_long(argc, argv, "-bhl:d:p:e:", table, NULL)) != -1) {
     switch (o) {
       case 'b': sdb_set_batch_mode(); break;
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
+      case 'e': elf_file = optarg; break;
       case 1: img_file = optarg; return 0;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
@@ -101,10 +124,12 @@ static int parse_args(int argc, char *argv[]) {
         printf("\t-l,--log=FILE           output log to FILE\n");
         printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
         printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
+        printf("\t-e,--elf=FILE           specify ELF file for function tracing\n");
         printf("\n");
         exit(0);
     }
-  }
+  }  
+
   return 0;
 }
 
@@ -141,6 +166,9 @@ void init_monitor(int argc, char *argv[]) {
   /* Initialize disasm and iringbuf. */
   IFDEF(CONFIG_ITRACE, init_disasm());
   IFDEF(CONFIG_ITRACE, init_iringbuf());
+
+  /* 初始化ftrace功能 */
+  IFDEF(CONFIG_FTRACE, init_ftrace(elf_file));
 
   /* Display welcome message. */
   welcome();
