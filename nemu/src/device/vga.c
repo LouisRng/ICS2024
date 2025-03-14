@@ -74,6 +74,12 @@ static inline void update_screen() {
 void vga_update_screen() {
   // TODO: call `update_screen()` when the sync register is non-zero,
   // then zero out the sync register
+  
+  // 当同步寄存器非零时调用update_screen()，然后将同步寄存器置零
+  if (vgactl_port_base[1]) {  // vgactl_port_base[1]是同步寄存器
+    IFDEF(CONFIG_VGA_SHOW_SCREEN, update_screen());
+    vgactl_port_base[1] = 0;  // 将同步寄存器置零
+  }
 }
 
 void init_vga() {

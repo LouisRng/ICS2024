@@ -1,8 +1,12 @@
 [1;34m[src/utils/log.c:30 init_log] Log is written to /home/ethan/workplace/ICS2024/ics2024/am-kernels/tests/alu-tests/build/nemu-log.txt[0m
-[1;34m[src/memory/paddr.c:55 init_mem] physical memory area [0x80000000, 0x87ffffff][0m
-[1;34m[src/monitor/monitor.c:86 load_img] The image is /home/ethan/workplace/ICS2024/ics2024/am-kernels/tests/alu-tests/build/alutest-riscv32-nemu.bin, size = 974180[0m
-[1;34m[src/monitor/monitor.c:43 welcome] Trace: [1;32mON[0m[0m
-[1;34m[src/monitor/monitor.c:44 welcome] If trace is enabled, a log file will be generated to record the trace. This may lead to a large log file. If it is not necessary, you can disable it in menuconfig[0m
-[1;34m[src/monitor/monitor.c:48 welcome] FTrace:  [1;31mOFF[0m[0m
-[1;34m[src/monitor/monitor.c:54 welcome] MTrace:  [1;31mOFF[0m[0m
-[1;34m[src/monitor/monitor.c:59 welcome] Build time: 19:14:19, Mar 13 2025[0m
+[1;34m[src/memory/paddr.c:56 init_mem] physical memory area [0x80000000, 0x87ffffff][0m
+[1;34m[src/device/io/mmio.c:50 add_mmio_map] Add mmio map 'serial' at [0xa00003f8, 0xa00003ff][0m
+[1;34m[src/device/io/mmio.c:50 add_mmio_map] Add mmio map 'rtc' at [0xa0000048, 0xa000004f][0m
+[1;34m[src/device/io/mmio.c:50 add_mmio_map] Add mmio map 'keyboard' at [0xa0000060, 0xa0000063][0m
+[1;34m[src/monitor/monitor.c:102 load_img] The image is /home/ethan/workplace/ICS2024/ics2024/am-kernels/tests/alu-tests/build/alutest-riscv32-nemu.bin, size = 974180[0m
+[1;34m[src/monitor/monitor.c:54 welcome] Trace: [1;32mON[0m[0m
+[1;34m[src/monitor/monitor.c:55 welcome] If trace is enabled, a log file will be generated to record the trace. This may lead to a large log file. If it is not necessary, you can disable it in menuconfig[0m
+[1;34m[src/monitor/monitor.c:59 welcome] FTrace:  [1;31mOFF[0m[0m
+[1;34m[src/monitor/monitor.c:65 welcome] MTrace:  [1;31mOFF[0m[0m
+[1;34m[src/monitor/monitor.c:70 welcome] DTrace:  [1;31mOFF[0m[0m
+[1;34m[src/monitor/monitor.c:75 welcome] Build time: 21:28:22, Mar 14 2025[0m
