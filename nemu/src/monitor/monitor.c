@@ -22,6 +22,8 @@
 /* ftrace */
 #include <cpu/ftrace.h>
 
+#include <device/dtrace.h>
+
 void init_rand();
 void init_log(const char *log_file);
 void init_mem();
@@ -35,6 +37,15 @@ void init_disasm();
 bool mtrace_cond() {
   bool cond = false;
   IFDEF(CONFIG_MTRACE, cond = MTRACE_COND);
+  return cond;
+}
+#endif
+
+/* 添加dtrace条件处理函数 */
+#ifdef CONFIG_DTRACE_COND
+bool dtrace_cond() {
+  bool cond = false;
+  IFDEF(CONFIG_DTRACE, cond = DTRACE_COND);
   return cond;
 }
 #endif
@@ -54,6 +65,11 @@ static void welcome() {
   Log("MTrace:  %s", MUXDEF(CONFIG_MTRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
   IFDEF(CONFIG_MTRACE, Log("Memory access tracing is enabled. "
         "This may significantly slow down simulation. "
+        "If it is not necessary, you can disable it in menuconfig"));
+
+  Log("DTrace:  %s", MUXDEF(CONFIG_DTRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
+  IFDEF(CONFIG_DTRACE, Log("Device access tracing is enabled. "
+        "This helps with debugging device interactions. "
         "If it is not necessary, you can disable it in menuconfig"));
 
   Log("Build time: %s, %s", __TIME__, __DATE__);

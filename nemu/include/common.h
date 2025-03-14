@@ -51,6 +51,12 @@ typedef uint16_t ioaddr_t;
 #define MTRACE_COND true
 #endif
 
+#ifdef CONFIG_DTRACE_COND
+#define DTRACE_COND (CONFIG_DTRACE_COND)
+#else
+#define DTRACE_COND true
+#endif
+
 #include <debug.h>
 
 #endif

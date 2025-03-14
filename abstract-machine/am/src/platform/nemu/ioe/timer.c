@@ -18,7 +18,7 @@ void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime) {
   
   // 如果RTC无效，使用模拟时钟
   if (rtc_time == 0) {
-    mock_time += 3;  // 每次增加100ms
+    mock_time += 2;  // 每次增加100ms
     uptime->us = mock_time;
   } else {
     uptime->us = rtc_time;

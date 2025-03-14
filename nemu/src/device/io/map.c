@@ -17,6 +17,36 @@
 #include <memory/host.h>
 #include <memory/vaddr.h>
 #include <device/map.h>
+#include <cpu/cpu.h>
+
+/* 在CONFIG_DTRACE下实现设备访问的日志记录功能 */
+#ifdef CONFIG_DTRACE
+
+/* 声明dtrace条件处理函数 */
+#ifdef CONFIG_DTRACE_COND
+extern bool dtrace_cond();
+#endif
+
+/* 实现设备读取日志函数 */
+static void log_device_read(const char *name, paddr_t addr, paddr_t offset, int len, word_t data) {
+#ifdef CONFIG_DTRACE_COND
+  if (!dtrace_cond()) return;
+#endif
+
+  printf("[DTRACE] READ:  device = %s, addr = 0x%08x, offset = 0x%08x, len = %d, data = 0x%08x, pc = 0x%08x\n", 
+         name, addr, offset, len, data, cpu.pc);
+}
+
+/* 实现设备写入日志函数 */
+static void log_device_write(const char *name, paddr_t addr, paddr_t offset, int len, word_t data) {
+#ifdef CONFIG_DTRACE_COND
+  if (!dtrace_cond()) return;
+#endif
+
+  printf("[DTRACE] WRITE: device = %s, addr = 0x%08x, offset = 0x%08x, len = %d, data = 0x%08x, pc = 0x%08x\n", 
+         name, addr, offset, len, data, cpu.pc);
+}
+#endif /* CONFIG_DTRACE */
 
 #define IO_SPACE_MAX (32 * 1024 * 1024)
 
@@ -58,6 +88,10 @@ word_t map_read(paddr_t addr, int len, IOMap *map) {
   paddr_t offset = addr - map->low;
   invoke_callback(map->callback, offset, len, false); // prepare data to read
   word_t ret = host_read(map->space + offset, len);
+  
+  // 添加dtrace记录
+  IFDEF(CONFIG_DTRACE, log_device_read(map->name, addr, offset, len, ret));
+  
   return ret;
 }
 
@@ -66,5 +100,9 @@ void map_write(paddr_t addr, int len, word_t data, IOMap *map) {
   check_bound(map, addr);
   paddr_t offset = addr - map->low;
   host_write(map->space + offset, len, data);
+  
+  // 添加dtrace记录
+  IFDEF(CONFIG_DTRACE, log_device_write(map->name, addr, offset, len, data));
+  
   invoke_callback(map->callback, offset, len, true);
 }

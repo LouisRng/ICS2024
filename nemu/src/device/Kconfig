@@ -7,6 +7,18 @@ menuconfig DEVICE
 
 if DEVICE
 
+config DTRACE
+  bool "Enable device access tracer"
+  default n
+  help
+    Enable device access tracing to record all device read/write operations.
+    This helps with debugging device interactions.
+
+config DTRACE_COND
+  depends on DTRACE
+  string "Only trace device accesses when the condition is true"
+  default "true"
+
 config HAS_PORT_IO
   bool
   default y if ISA_x86
