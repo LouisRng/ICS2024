@@ -133,6 +133,64 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 101 ????? 11000 11", bge    , B, s->dnpc = ((int32_t)src1 >= (int32_t)src2) ? s->pc + imm : s->dnpc);
   INSTPAT("??????? ????? ????? 110 ????? 11000 11", bltu   , B, s->dnpc = (src1 < src2) ? s->pc + imm : s->dnpc);
   INSTPAT("??????? ????? ????? 111 ????? 11000 11", bgeu   , B, s->dnpc = (src1 >= src2) ? s->pc + imm : s->dnpc);
+
+  /* CSR instructions */
+  INSTPAT("??????? ????? 001 ????? 1110011", csrrw  , I, {
+    // 从指令中提取CSR寄存器编号
+    uint32_t csr = BITS(s->isa.inst, 31, 20);
+    word_t t = 0;
+    // 根据CSR寄存器编号进行相应操作
+    switch (csr) {
+      case 0x305: // mtvec
+        t = cpu.csr.mtvec;
+        cpu.csr.mtvec = src1;
+        break;
+      case 0x300: // mstatus
+        t = cpu.csr.mstatus;
+        cpu.csr.mstatus = src1;
+        break;
+      case 0x341: // mepc
+        t = cpu.csr.mepc;
+        cpu.csr.mepc = src1;
+        break;
+      case 0x342: // mcause
+        t = cpu.csr.mcause;
+        cpu.csr.mcause = src1;
+        break;
+      default:
+        // 不支持的CSR寄存器
+        panic("Unsupported CSR register 0x%x at PC = " FMT_WORD, csr, s->pc);
+    }
+    // 如果rd不为0，则写入读取的旧值
+    if (rd != 0) {
+      R(rd) = t;
+    }
+  });
+
+  /* CSR读取指令 - csrr rd, csr (实际上是csrrs rd, csr, x0的别名) */
+  INSTPAT("??????? 00000 010 ????? 1110011", csrrs  , I, {
+    uint32_t csr = BITS(s->isa.inst, 31, 20);
+    word_t t = 0;
+    switch (csr) {
+      case 0x305: // mtvec
+        t = cpu.csr.mtvec;
+        break;
+      case 0x300: // mstatus
+        t = cpu.csr.mstatus;
+        break;
+      case 0x341: // mepc
+        t = cpu.csr.mepc;
+        break;
+      case 0x342: // mcause
+        t = cpu.csr.mcause;
+        break;
+      default:
+        panic("Unsupported CSR register 0x%x at PC = " FMT_WORD, csr, s->pc);
+    }
+    if (rd != 0) {
+      R(rd) = t;
+    }
+  });
   
   /* Jump instructions */
   INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, {

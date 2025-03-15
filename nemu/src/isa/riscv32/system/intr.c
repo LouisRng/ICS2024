@@ -19,8 +19,15 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   /* TODO: Trigger an interrupt/exception with ``NO''.
    * Then return the address of the interrupt/exception vector.
    */
-
-  return 0;
+  
+  // 保存当前PC到mepc寄存器
+  cpu.csr.mepc = epc;
+  
+  // 设置mcause寄存器为异常号
+  cpu.csr.mcause = NO;
+  
+  // 返回异常入口地址（从mtvec寄存器中获取）
+  return cpu.csr.mtvec;
 }
 
 word_t isa_query_intr() {

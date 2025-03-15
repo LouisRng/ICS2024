@@ -11,4 +11,4 @@
 [1;34m[src/monitor/monitor.c:59 welcome] FTrace:  [1;31mOFF[0m[0m
 [1;34m[src/monitor/monitor.c:65 welcome] MTrace:  [1;31mOFF[0m[0m
 [1;34m[src/monitor/monitor.c:70 welcome] DTrace:  [1;31mOFF[0m[0m
-[1;34m[src/monitor/monitor.c:75 welcome] Build time: 21:28:22, Mar 14 2025[0m
+[1;34m[src/monitor/monitor.c:75 welcome] Build time: 15:33:44, Mar 15 2025[0m
