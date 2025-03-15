@@ -16,6 +16,14 @@
 #include <cpu/etrace.h>
 #include <isa.h>
 
+// 异常追踪条件定义
+#ifdef CONFIG_ETRACE_COND
+#define ETRACE_COND (CONFIG_ETRACE_COND)
+#else
+#define ETRACE_COND true
+#endif
+
+
 #ifdef CONFIG_ETRACE
 static FILE *etrace_fp = NULL;
 
@@ -89,7 +97,7 @@ void init_etrace() {
 // 记录异常发生
 void etrace_exception(word_t cause, vaddr_t pc, vaddr_t epc) {
 #ifdef CONFIG_ETRACE
-  if (MUXDEF(CONFIG_ETRACE_COND, CONFIG_ETRACE_COND, true)) {
+  if (ETRACE_COND) {
     bool is_interrupt = (cause & 0x80000000) != 0;
     fprintf(etrace_fp, "<%s> [cause=%08x: %s] @ pc=" FMT_WORD ", epc=" FMT_WORD "\n", 
             is_interrupt ? "INTR" : "EXCP",
@@ -103,7 +111,7 @@ void etrace_exception(word_t cause, vaddr_t pc, vaddr_t epc) {
 // 记录异常返回
 void etrace_return(word_t cause, vaddr_t pc, vaddr_t target) {
 #ifdef CONFIG_ETRACE
-  if (MUXDEF(CONFIG_ETRACE_COND, CONFIG_ETRACE_COND, true)) {
+  if (ETRACE_COND) {
     bool is_interrupt = (cause & 0x80000000) != 0;
     fprintf(etrace_fp, "<RETN> [from %s] @ pc=" FMT_WORD ", target=" FMT_WORD "\n", 
             is_interrupt ? "interrupt" : "exception",
