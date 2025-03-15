@@ -9,7 +9,13 @@ Context* __am_irq_handle(Context *c) {
     Event ev = {0};
     switch (c->mcause) {
       case -1: // 自陷指令对应的异常号
-        ev.event = EVENT_YIELD;
+        if (c->GPR1 == -1) { // a7寄存器（x17）存储-1表示yield
+          ev.event = EVENT_YIELD;
+        } else {
+          // 这是系统调用事件，a7中存储的是系统调用号
+          ev.event = EVENT_SYSCALL;
+          ev.cause = c->GPR1; // 系统调用号存储在a7寄存器中
+        }
         break;
       // 其他异常处理
       default:
