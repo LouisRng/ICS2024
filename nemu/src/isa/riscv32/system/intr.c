@@ -14,6 +14,7 @@
 ***************************************************************************************/
 
 #include <isa.h>
+#include <cpu/etrace.h>
 
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   /* TODO: Trigger an interrupt/exception with ``NO''.
@@ -25,7 +26,11 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   
   // 设置mcause寄存器为异常号
   cpu.csr.mcause = NO;
-  
+
+  #ifdef CONFIG_ETRACE
+    etrace_exception(NO, cpu.csr.mtvec, epc);
+  #endif
+
   // 返回异常入口地址（从mtvec寄存器中获取）
   return cpu.csr.mtvec;
 }

@@ -24,6 +24,9 @@
 /* 环形缓冲区 */
 #include <cpu/iringbuf.h>
 
+/* 异常追踪 */
+#include <cpu/etrace.h>
+
 #define R(i) gpr(i)
 #define Mr vaddr_read
 #define Mw vaddr_write
@@ -214,6 +217,14 @@ static int decode_exec(Decode *s) {
     }
     R(rd) = t;
   }); 
+
+  /* Machine-mode Return 指令 */
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, {
+    #ifdef CONFIG_ETRACE
+      etrace_return(cpu.csr.mcause, s->pc, cpu.csr.mepc);
+    #endif
+    s->dnpc = cpu.csr.mepc;  // 从mepc恢复程序计数器
+  });
 
   /* RV32M Extension (Multiplication and Division) */
   INSTPAT("0000001 ????? ????? 000 ????? 01100 11", mul    , R, R(rd) = (int32_t)src1 * (int32_t)src2);

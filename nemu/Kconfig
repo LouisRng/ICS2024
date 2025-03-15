@@ -196,6 +196,21 @@ config FTRACE
     to map addresses to function names. Use --elf parameter to specify
     the ELF file.
 
+  # ETRACE 功能，异常跟踪相关
+config ETRACE
+  depends on TRACE && TARGET_NATIVE_ELF
+  bool "Enable exception tracer"
+  default y
+  help
+    Enable exception/interrupt tracing to record all exception events.
+    This helps diagnose issues with exception handling without affecting
+    program behavior.
+
+config ETRACE_COND
+  depends on ETRACE
+  string "Only trace exceptions when the condition is true"
+  default "true"
+
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
   bool "Enable differential testing"
