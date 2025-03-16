@@ -15,24 +15,30 @@ void __am_pmem_unprotect();
 
 void __am_panic_on_return() { panic("should not reach here\n"); }
 
-static void irq_handle(Context *c) {
-  c->vm_head = thiscpu->vm_head;
-  c->ksp = thiscpu->ksp;
+Context* __am_irq_handle(Context *c) {
+  if (user_handler) {
+    Event ev = {0};
+    switch (c->mcause) {
+      case -1: // 自陷指令对应的异常号
+        if (c->GPR1 == -1) {
+          // yield()函数中设置了a7为-1，表示EVENT_YIELD
+          ev.event = EVENT_YIELD;
+        } else {
+          // 其他值表示系统调用，系统调用号存储在a7(GPR1)中
+          ev.event = EVENT_SYSCALL;
+          ev.cause = c->GPR1; // 保存系统调用号到cause字段
+        }
+        break;
+      default:
+        ev.event = EVENT_ERROR;
+        break;
+    }
 
-  if (thiscpu->ev.event == EVENT_ERROR) {
-    printf("Unhandle signal '%s' at pc = %p, badaddr = %p, cause = 0x%x\n",
-      thiscpu->ev.msg, AM_REG_PC(&c->uc), thiscpu->ev.ref, thiscpu->ev.cause);
-    assert(0);
+    c = user_handler(ev, c);
+    assert(c != NULL);
   }
-  c = user_handler(thiscpu->ev, c);
-  assert(c != NULL);
 
-  __am_switch(c);
-
-  // magic call to restore context
-  void (*p)(Context *c) = (void *)(uintptr_t)0x100008;
-  p(c);
-  __am_panic_on_return();
+  return c;
 }
 
 static void setup_stack(uintptr_t event, ucontext_t *uc) {

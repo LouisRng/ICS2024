@@ -8,9 +8,7 @@ static int sys_yield() {
 }
 
 static int sys_exit(int status) {
-  // 修改这里，传递0作为参数，表示GOOD TRAP
-  // 或者使用宏定义的值（如果有的话）
-  halt(0);  // 使用0作为退出状态，表示正常退出
+  halt(status);  // 直接传递用户程序提供的退出状态
   return 0; // 不会执行到这里
 }
 
@@ -26,7 +24,7 @@ void do_syscall(Context *c) {
       c->GPRx = sys_yield();
       break;
     case SYS_exit:
-      c->GPRx = sys_exit(a[0]);
+      c->GPRx = sys_exit(a[0]);  // 传递用户程序的退出状态
       break;
     default: panic("Unhandled syscall ID = %d", a[3]);
   }
