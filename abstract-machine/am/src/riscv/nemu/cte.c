@@ -11,6 +11,9 @@ Context* __am_irq_handle(Context *c) {
       case -1: // 自陷指令对应的异常号
         ev.event = EVENT_YIELD;
         break;
+      case 8:  // RISC-V中用户模式环境调用(ecall from U-mode)对应的异常号
+        ev.event = EVENT_SYSCALL;
+        break;
       // 其他异常处理
       default:
         ev.event = EVENT_ERROR;
